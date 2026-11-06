@@ -317,24 +317,24 @@ def painel():
     m3.metric("Já foram", len(feitos))
     m4.metric("Padres livres", "%d/%d" % (len(livres), len(padres)))
 
-    esq, dir_ = st.columns([1, 2], gap="large")
-
-    with esq:
-        st.subheader("Padres")
-        if not padres:
-            st.write("Nenhum padre na lista. Inclua um abaixo.")
-        for pr in padres:
-            b = ocupados.get(pr["id"])
-            with st.container(border=True):
-                st.markdown("**%s**  %s" % (esc(pr["name"]), ":red[OCUPADO]" if b else ":green[LIVRE]"))
-                if b:
+    # Só aparecem os padres que estão confessando (é neles que fica o botão Concluir).
+    if ocupados:
+        esq, dir_ = st.columns([1, 2], gap="large")
+        with esq:
+            st.subheader("Confessando agora")
+            for pr in padres:
+                b = ocupados.get(pr["id"])
+                if not b:
+                    continue
+                with st.container(border=True):
+                    st.markdown("**%s**  :red[OCUPADO]" % esc(pr["name"]))
                     st.markdown("%s  \nconfessando desde %s" % (esc(b["name"]), hhmm(b.get("startedAt"))))
                     st.button("✓ Concluir", key="fin-" + b["id"], type="primary", width="stretch",
                               on_click=cb_simples, args=("finish", b["id"]))
                     st.button("Voltar à fila", key="volta-" + b["id"], width="stretch",
                               on_click=cb_simples, args=("back", b["id"]))
-                else:
-                    st.caption("Disponível.")
+    else:
+        dir_ = st.container()
 
     with dir_:
         st.subheader("Lista de pessoas")
